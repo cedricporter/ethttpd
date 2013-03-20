@@ -1,3 +1,6 @@
 *.o
 src/ethttpd
 src/.deps/
+GRTAGS
+GTAGS
+GPATH
