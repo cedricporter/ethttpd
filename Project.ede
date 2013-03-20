@@ -1,0 +1,7 @@
+;; Object ethttpd-project
+;; EDE Project Files are auto generated: Do Not Edit
+(ede-proj-project "ethttpd-project"
+  :file "Project.ede"
+  :name "ethttpd-project"
+  :targets 'nil
+  )
