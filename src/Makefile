@@ -12,7 +12,7 @@ C_LINK=$(CC) $(CFLAGS) $(LDFLAGS) -L.
 
 top_builddir = ..
 
-DEP_FILES=$(patsubst %.c, .deps/%.P, $(wildcard *.c)) 
+DEP_FILES=$(wildcard .deps/*.P)
 
 all: ethttpd
 
@@ -30,9 +30,9 @@ clean:
 	rm -f *.mod *.o *.obj .deps/*.P .lo
 
 print-info:
-	echo $(ethttpd_OBJ)
-	echo $(ethttpd_SOURCES)
-	echo $(DEP_FILES)
+	@echo "objs: " $(ethttpd_OBJ)
+	@echo "srcs: " $(ethttpd_SOURCES)
+	@echo "deps: " $(DEP_FILES)
 
 check-syntax:
 	gcc $(CFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES) 

@@ -9,6 +9,8 @@
 
 #include "ethttpd.h"
 #include <time.h>
+#include <netdb.h>
+
 
 #define ETHTTPD_PORT 12345
 
@@ -16,14 +18,18 @@ int initialize(int port)
 {
     int listenfd;
     struct sockaddr_in servaddr;
+    int sockopt = 1;
 
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         exit(1);
     }
 
+    setsockopt(listenfd, getprotobyname("tcp")->p_proto,
+               SO_REUSEADDR, &sockopt, sizeof(sockopt));
+
     bzero(&servaddr, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
+    servaddr.sin_family = PF_INET;
     servaddr.sin_port = htons(port);
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
@@ -63,7 +69,7 @@ int main(int argc, char **argv)
 		.sa_flags = SA_NOCLDSTOP
 	};
 
-    /* sigaction(SIGCHLD, &sa, NULL); */
+    sigaction(SIGCHLD, &sa, NULL);
 
 
     listenfd = initialize(ETHTTPD_PORT);
@@ -72,12 +78,15 @@ int main(int argc, char **argv)
     {
         socklen_t peerlen=sizeof(peeraddr);
 
+        printf("Waiting...\n");
         connfd = accept(listenfd, (struct sockaddr *)&peeraddr, &peerlen);
         if (connfd < 0)
         {
-            printf("accept error: %d", errno);
-            exit(1);
+            if (EINTR != errno)
+                printf("accept error: %s", strerror(errno));
+            continue;
         }
+        printf("accept\n");
 
         pid = fork();
 
@@ -85,21 +94,24 @@ int main(int argc, char **argv)
         {
         case 0:
             close(listenfd);
+
+            /* read */
+            n = read(connfd, buff, MAXLINE);
+
+            /* write back */
             ticks = time(NULL);
             snprintf(buff, sizeof(buff),
                      "HTTP/1.0 200 OK\r\n"
                      "Content-Type: text/plain\r\n"
                      "\r\n"
                      "\r\n%.24s\r\n", ctime(&ticks));
-            fh = fdopen((int)connfd, "r+");
-            fputs(buff, fh);
-            /* n = write(connfd, buff, strlen(buff)); */
+            printf("fputs\n");
+            n = write(connfd, buff, strlen(buff));
             if (n < 0)
             {
                 exit(1);
             }
-            /* fclose(fh); */
-            /* close(connfd); */
+            close(connfd);
             exit(0);
             break;
         default:
