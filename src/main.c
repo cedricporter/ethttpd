@@ -8,59 +8,50 @@
  */
 
 #include "ethttpd.h"
+#include <time.h>
 
 int main(int argc, char **argv)
 {
-    int sockfd, n;
-    char recvline[MAXLINE + 1];
+    int listenfd, connfd;
     struct sockaddr_in servaddr;
+    char buff[MAXLINE];
+    time_t ticks;
+    int n;
 
-    if (argc != 2)
+    if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        printf("usage: a.out ip");
-        exit(-1);
+        exit(1);
     }
-
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        printf("sokcet error");
-        exit(-1);
-    }
-
 
     bzero(&servaddr, sizeof(servaddr));
-
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(8787);
-    if (inet_pton(AF_INET, argv[1], &servaddr.sin_addr) <= 0)
+    servaddr.sin_port = htons(12345);
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if (bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
     {
-        printf("inet_pton error");
-        exit(-1);
+        exit(1);
     }
 
-    if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+    if (listen(listenfd, 10) < 0)
     {
-        printf("connect error");
-        exit(-1);
+        exit(1);
     }
 
-    while ((n = read(sockfd, recvline, MAXLINE)) > 0)
+    for (;;)
     {
-        recvline[n] = 0;
-        if (fputs(recvline, stdout) == EOF)
+        connfd = accept(listenfd, NULL, NULL);
+
+        ticks = time(NULL);
+        snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
+        n = write(connfd, buff, strlen(buff));
+        if (n < 0)
         {
-            printf("end");
-
-            exit(-1);
+            exit(1);
         }
+        close(connfd);
     }
-
-    if (n < 0)
-    {
-        printf("read error");
-        exit(-1);
-    }
-
-
+    
     return 0;
 }
+

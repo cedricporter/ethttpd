@@ -4,3 +4,5 @@ src/.deps/
 GRTAGS
 GTAGS
 GPATH
+*.P
+ethttpd

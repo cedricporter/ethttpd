@@ -20,8 +20,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <string.h>
 
 
 #define MAXLINE 4096
 
 #endif /* ETHTTPD_H */
+/****/ 
