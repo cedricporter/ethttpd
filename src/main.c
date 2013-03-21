@@ -10,7 +10,9 @@
 #include "ethttpd.h"
 #include <time.h>
 
-int initialize()
+#define ETHTTPD_PORT 12345
+
+int initialize(int port)
 {
     int listenfd;
     struct sockaddr_in servaddr;
@@ -22,7 +24,7 @@ int initialize()
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(12345);
+    servaddr.sin_port = htons(port);
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
@@ -36,7 +38,6 @@ int initialize()
     }
 
     return listenfd;
-
 }
 
 int main(int argc, char **argv)
@@ -46,14 +47,18 @@ int main(int argc, char **argv)
     time_t ticks;
     int n;
 
-    listenfd = initialize();
+    listenfd = initialize(ETHTTPD_PORT);
     
     for (;;)
     {
         connfd = accept(listenfd, NULL, NULL);
 
         ticks = time(NULL);
-        snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
+        snprintf(buff, sizeof(buff),
+                 "HTTP/1.0 200 OK\r\n"
+                 "Content-Type: text/plain\r\n"
+                 "Connection: close\r\n"
+                 "\r\n%.24s\r\n", ctime(&ticks));
         n = write(connfd, buff, strlen(buff));
         if (n < 0)
         {
