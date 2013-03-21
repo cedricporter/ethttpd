@@ -35,7 +35,7 @@ print-info:
 	echo $(DEP_FILES)
 
 check-syntax:
-	gcc $(CPPFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES) 
+	gcc $(CFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES) 
 
 
 # End of Makefile

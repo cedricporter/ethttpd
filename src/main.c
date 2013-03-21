@@ -32,7 +32,7 @@ int initialize(int port)
         exit(1);
     }
 
-    if (listen(listenfd, 10) < 0)
+    if (listen(listenfd, 100) < 0)
     {
         exit(1);
     }
@@ -40,31 +40,71 @@ int initialize(int port)
     return listenfd;
 }
 
+/* clean up dead children */
+static void child_reaper(int sig)
+{
+	int status, pid;
+
+	while(0 < (pid = waitpid(-1, &status, WNOHANG)))
+		printf("Child process %d exited with status %d\n",pid,status);
+}
+
 int main(int argc, char **argv)
 {
     int listenfd, connfd;
     char buff[MAXLINE];
     time_t ticks;
-    int n;
+    int n, pid;
+    FILE *fh;
+    struct sockaddr_in peeraddr;
+
+	struct sigaction sa = {
+		.sa_handler = &child_reaper,
+		.sa_flags = SA_NOCLDSTOP
+	};
+
+    /* sigaction(SIGCHLD, &sa, NULL); */
+
 
     listenfd = initialize(ETHTTPD_PORT);
     
     for (;;)
     {
-        connfd = accept(listenfd, NULL, NULL);
+        socklen_t peerlen=sizeof(peeraddr);
 
-        ticks = time(NULL);
-        snprintf(buff, sizeof(buff),
-                 "HTTP/1.0 200 OK\r\n"
-                 "Content-Type: text/plain\r\n"
-                 "Connection: close\r\n"
-                 "\r\n%.24s\r\n", ctime(&ticks));
-        n = write(connfd, buff, strlen(buff));
-        if (n < 0)
+        connfd = accept(listenfd, (struct sockaddr *)&peeraddr, &peerlen);
+        if (connfd < 0)
         {
+            printf("accept error: %d", errno);
             exit(1);
         }
-        close(connfd);
+
+        pid = fork();
+
+        switch (pid)
+        {
+        case 0:
+            close(listenfd);
+            ticks = time(NULL);
+            snprintf(buff, sizeof(buff),
+                     "HTTP/1.0 200 OK\r\n"
+                     "Content-Type: text/plain\r\n"
+                     "\r\n"
+                     "\r\n%.24s\r\n", ctime(&ticks));
+            fh = fdopen((int)connfd, "r+");
+            fputs(buff, fh);
+            /* n = write(connfd, buff, strlen(buff)); */
+            if (n < 0)
+            {
+                exit(1);
+            }
+            /* fclose(fh); */
+            /* close(connfd); */
+            exit(0);
+            break;
+        default:
+            close(connfd);
+        }
     }
 
     
