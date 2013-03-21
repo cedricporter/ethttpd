@@ -30,3 +30,5 @@ clean:
 	rm -f *.mod *.o *.obj .deps/*.P .lo
 	rm -f src/.deps/*.P
 
+check-syntax:
+        gcc $(CPPFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES) 

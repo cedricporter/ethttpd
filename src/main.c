@@ -10,13 +10,10 @@
 #include "ethttpd.h"
 #include <time.h>
 
-int main(int argc, char **argv)
+int initialize()
 {
-    int listenfd, connfd;
+    int listenfd;
     struct sockaddr_in servaddr;
-    char buff[MAXLINE];
-    time_t ticks;
-    int n;
 
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -38,6 +35,19 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    return listenfd;
+
+}
+
+int main(int argc, char **argv)
+{
+    int listenfd, connfd;
+    char buff[MAXLINE];
+    time_t ticks;
+    int n;
+
+    listenfd = initialize();
+    
     for (;;)
     {
         connfd = accept(listenfd, NULL, NULL);
@@ -51,6 +61,7 @@ int main(int argc, char **argv)
         }
         close(connfd);
     }
+
     
     return 0;
 }
