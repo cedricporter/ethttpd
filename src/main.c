@@ -8,18 +8,19 @@
  */
 
 #include "ethttpd.h"
+#include "utils.h"
 #include <time.h>
-#include <netdb.h>
-#include <stdarg.h>
 
 #define ETHTTPD_PORT 12345
 
-void et_log(char *s, ...)
+
+/* clean up dead children */
+static void sig_chld(int sig)
 {
-	va_list ap;
-	va_start(ap,s);
-    vfprintf(stderr, s, ap);
-	va_end(ap);
+	int status, pid;
+
+	while (0 < (pid = waitpid(-1, &status, WNOHANG)))
+		printf("Child process %d exited with status %d\n", pid, status);
 }
 
 int initialize(int port)
@@ -27,6 +28,14 @@ int initialize(int port)
     int listenfd;
     struct sockaddr_in servaddr;
     int sockopt = 1;
+
+    
+	struct sigaction sa;
+    sa.sa_handler = &sig_chld;
+    sa.sa_flags = SA_NOCLDSTOP;
+
+    sigaction(SIGCHLD, &sa, NULL);
+    
 
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -56,16 +65,7 @@ int initialize(int port)
     return listenfd;
 }
 
-/* clean up dead children */
-static void child_reaper(int sig)
-{
-	int status, pid;
-
-	while(0 < (pid = waitpid(-1, &status, WNOHANG)))
-		printf("Child process %d exited with status %d\n",pid,status);
-}
-
-int handle(int connfd)
+int handle_request(int connfd)
 {
     char read_buff[MAXLINE];
     time_t ticks;
@@ -86,56 +86,49 @@ int handle(int connfd)
     n = write(connfd, buff, strlen(buff));
     if (n < 0)
     {
-        exit(1);
+        return 1;
     }
     close(connfd);
 
     return 0;
 }
 
-int main(int argc, char **argv)
+int mpm_fork(int listenfd)
 {
-    int listenfd, connfd;
     int pid;
+    int connfd;
     struct sockaddr_in peeraddr;
 
-	struct sigaction sa;
-    sa.sa_handler = &child_reaper;
-    sa.sa_flags = SA_NOCLDSTOP;
-
-    sigaction(SIGCHLD, &sa, NULL);
-
-
-    listenfd = initialize(ETHTTPD_PORT);
-    
     for (;;)
     {
-        socklen_t peerlen=sizeof(peeraddr);
+        socklen_t peerlen = sizeof(peeraddr);
 
         et_log("Waiting...\n");
-        connfd = accept(listenfd, (struct sockaddr *)&peeraddr, &peerlen);
-        if (connfd < 0)
+        
+        if ((connfd = accept(listenfd, (struct sockaddr *)&peeraddr, &peerlen)) < 0)
         {
             if (EINTR != errno)
                 printf("accept error: %s", strerror(errno));
             continue;
         }
-        et_log("accept\n");
 
-        pid = fork();
-
-        switch (pid)
+        if ((pid = fork()) == 0)
         {
-        case 0:
             close(listenfd);
-
-            exit(handle(connfd));
-            break;
-        default:
-            close(connfd);
+            exit(handle_request(connfd));
         }
-    }
+        
+        close(connfd);
+    }        
+}
 
+int main(int argc, char **argv)
+{
+    int listenfd;
+
+    listenfd = initialize(ETHTTPD_PORT);
+
+    mpm_fork(listenfd);
     
     return 0;
 }

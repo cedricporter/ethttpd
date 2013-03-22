@@ -35,6 +35,6 @@ print-info:
 	@echo "deps: " $(DEP_FILES)
 
 check-syntax:
-	gcc $(CFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES) 
+	$(C_COMPILE) $(C_DEPENDENCIES) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES) 
 
 # End of Makefile
