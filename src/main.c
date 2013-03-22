@@ -9,7 +9,8 @@
 
 #include "ethttpd.h"
 #include "utils.h"
-#include <time.h>
+
+#include "mpm_fork.h"
 
 #define ETHTTPD_PORT 12345
 
@@ -65,62 +66,7 @@ int initialize(int port)
     return listenfd;
 }
 
-int handle_request(int connfd)
-{
-    char read_buff[MAXLINE];
-    time_t ticks;
-    int n;
-    char buff[MAXLINE];
-        
-    /* read */
-    n = read(connfd, read_buff, MAXLINE);
 
-    /* write back */
-    ticks = time(NULL);
-    snprintf(buff, sizeof(buff),
-             "HTTP/1.0 200 OK\r\n"
-             "Content-Type: text/plain\r\n"
-             "\r\n"
-             "%.24s\r\n\r\n%s", ctime(&ticks), read_buff);
-    printf("fputs\n");
-    n = write(connfd, buff, strlen(buff));
-    if (n < 0)
-    {
-        return 1;
-    }
-    close(connfd);
-
-    return 0;
-}
-
-int mpm_fork(int listenfd)
-{
-    int pid;
-    int connfd;
-    struct sockaddr_in peeraddr;
-
-    for (;;)
-    {
-        socklen_t peerlen = sizeof(peeraddr);
-
-        et_log("Waiting...\n");
-        
-        if ((connfd = accept(listenfd, (struct sockaddr *)&peeraddr, &peerlen)) < 0)
-        {
-            if (EINTR != errno)
-                printf("accept error: %s", strerror(errno));
-            continue;
-        }
-
-        if ((pid = fork()) == 0)
-        {
-            close(listenfd);
-            exit(handle_request(connfd));
-        }
-        
-        close(connfd);
-    }        
-}
 
 int main(int argc, char **argv)
 {
