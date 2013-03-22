@@ -14,7 +14,7 @@ top_builddir = ..
 
 DEP_FILES=$(wildcard .deps/*.P)
 
-all: ethttpd
+all: ../ethttpd
 
 DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
 -include $(DEP_FILES)
@@ -23,7 +23,7 @@ DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
 	@echo '$(C_COMPILE) -c $<'; \
 	$(C_COMPILE) $(C_DEPENDENCIES) -o $@ -c $<
 
-ethttpd: $(ethttpd_OBJ)
+../ethttpd: $(ethttpd_OBJ)
 	$(C_LINK) -o $@ $^ $(LDDEPS)
 
 clean:
