@@ -37,5 +37,4 @@ print-info:
 check-syntax:
 	gcc $(CFLAGS) -Wall -Wextra -pedantic -fsyntax-only $(CHK_SOURCES) 
 
-
 # End of Makefile
