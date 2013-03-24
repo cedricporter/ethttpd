@@ -11,6 +11,7 @@
 #include "utils.h"
 
 #include "mpm_fork.h"
+#include "mpm_thread.h"
 
 #define ETHTTPD_PORT 12345
 
@@ -24,19 +25,20 @@ static void sig_chld(int sig)
 		printf("Child process %d exited with status %d\n", pid, status);
 }
 
+void set_signal_func()
+{
+    struct sigaction sa;
+    sa.sa_handler = &sig_chld;
+    sa.sa_flags = SA_NOCLDSTOP;
+
+    sigaction(SIGCHLD, &sa, NULL);
+}
+
 int initialize(int port)
 {
     int listenfd;
     struct sockaddr_in servaddr;
     int sockopt = 1;
-
-    
-	struct sigaction sa;
-    sa.sa_handler = &sig_chld;
-    sa.sa_flags = SA_NOCLDSTOP;
-
-    sigaction(SIGCHLD, &sa, NULL);
-    
 
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -72,10 +74,11 @@ int main(int argc, char **argv)
 {
     int listenfd;
 
+    set_signal_func();
+
     listenfd = initialize(ETHTTPD_PORT);
 
     mpm_fork(listenfd);
-    
+
     return 0;
 }
-
