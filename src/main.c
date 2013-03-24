@@ -12,6 +12,7 @@
 
 #include "mpm_fork.h"
 #include "mpm_thread.h"
+#include "mpm_select.h"
 
 #define ETHTTPD_PORT 12345
 
@@ -69,7 +70,6 @@ int initialize(int port)
 }
 
 
-
 int main(int argc, char **argv)
 {
     int listenfd;
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
     listenfd = initialize(ETHTTPD_PORT);
 
-    mpm_fork(listenfd);
+    mpm_select(listenfd);
 
     return 0;
 }
