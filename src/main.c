@@ -13,27 +13,11 @@
 #include "mpm_fork.h"
 #include "mpm_thread.h"
 #include "mpm_select.h"
+#include "mpm_prefork.h"
+#include "mpm_thread_pool.h"
 
 #define ETHTTPD_PORT 12345
 
-
-/* clean up dead children */
-static void sig_chld(int sig)
-{
-	int status, pid;
-
-	while (0 < (pid = waitpid(-1, &status, WNOHANG)))
-		printf("Child process %d exited with status %d\n", pid, status);
-}
-
-void set_signal_func()
-{
-    struct sigaction sa;
-    sa.sa_handler = &sig_chld;
-    sa.sa_flags = SA_NOCLDSTOP;
-
-    sigaction(SIGCHLD, &sa, NULL);
-}
 
 int initialize(int port)
 {
@@ -74,11 +58,9 @@ int main(int argc, char **argv)
 {
     int listenfd;
 
-    set_signal_func();
-
     listenfd = initialize(ETHTTPD_PORT);
 
-    mpm_select(listenfd);
+    mpm_thread_pool(listenfd);
 
     return 0;
 }

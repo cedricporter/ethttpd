@@ -12,11 +12,32 @@
 #include "utils.h"
 #include "http.h"
 
+
+/* clean up dead children */
+static void sig_chld(int sig)
+{
+	int status, pid;
+
+	while (0 < (pid = waitpid(-1, &status, WNOHANG)))
+		printf("Child process %d exited with status %d\n", pid, status);
+}
+
+static void set_signal_func()
+{
+    struct sigaction sa;
+    sa.sa_handler = &sig_chld;
+    sa.sa_flags = SA_NOCLDSTOP;
+
+    sigaction(SIGCHLD, &sa, NULL);
+}
+
 int mpm_fork(int listenfd)
 {
     int pid;
     int connfd;
     struct sockaddr_in peeraddr;
+
+    set_signal_func();
 
     for (;;)
     {
