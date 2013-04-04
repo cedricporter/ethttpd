@@ -23,15 +23,18 @@ int initialize(int port)
 {
     int listenfd;
     struct sockaddr_in servaddr;
-    int sockopt = 1;
+    int on=1;
 
     if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         exit(1);
     }
 
-    setsockopt(listenfd, getprotobyname("tcp")->p_proto,
-               SO_REUSEADDR, &sockopt, sizeof(sockopt));
+    if((setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)))<0)
+    {
+        perror("setsockopt failed");
+        exit(EXIT_FAILURE);
+    }
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = PF_INET;
@@ -40,6 +43,7 @@ int initialize(int port)
 
     if (bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
     {
+        perror("bind");
         et_log("Bind error");
         exit(1);
     }

@@ -23,10 +23,17 @@ typedef enum {
 } method_type;
 
 
+
 static method_type check_method(char *req)
 {
-	if(!strncmp("GET",req,3)) return METHOD_GET;
-	if(!strncmp("POST",req,4)) return METHOD_POST;
+	if (!strncmp("GET", req, 3))
+    {
+        return METHOD_GET;
+    }
+	if (!strncmp("POST", req, 4))
+    {
+        return METHOD_POST;
+    }
 	return METHOD_INVALID;
 }
 
@@ -38,14 +45,18 @@ int parse_header(char *buf)
     struct stat st;
     char *ext;
     int i;
+    const char *mime_type = NULL;
 
     switch (method = check_method(buf))
     {
     case METHOD_GET:
         uri = buf + 4;
+        break;
     case METHOD_POST:
         uri = buf + 5;
+        break;
     default:
+        printf("exit");
         exit(1);
     }
 
@@ -73,13 +84,14 @@ int parse_header(char *buf)
 
     if (!strlen(doc)) doc = ".";
 
+    et_log("doc: %s, uri: %s", doc, uri);
+
     if (stat(doc, &st) == 0)
     {
         /* directory */
         if (S_ISDIR(st.st_mode))
         {
-            /* leave */
-
+            et_log("directory");
             goto leave;
         }
 
@@ -91,25 +103,36 @@ int parse_header(char *buf)
             /* check if it is a cgi */
             for (i = 0; i < 0; ++i)
             {
+                et_log("handle cgi");
                 /* handle cgi */
-                /* return */
+                return 0;
             }
 
             /* check its mime type  */
+            mime_type = get_mime_type(ext);
         }
+
+        if (!mime_type)
+        {
+            mime_type = "text/plain";
+        }
+
+        et_log("mime_type: %s", mime_type);
 
         if (method == METHOD_GET)
         {
             /* send file */
+            et_log("send file");
         }
         else
         {
-            /* 400 */
+            et_log("400");
         }
     }
     else
     {
         /* 404 */
+        et_log("404");
     }
 
 leave:
@@ -127,13 +150,14 @@ int handle_request(int connfd)
     n = read(connfd, read_buff, MAXLINE);
 
 
-
     /* write back */
     snprintf(buff, sizeof(buff),
              "HTTP/1.0 200 OK\r\n"
              "Content-Type: text/plain\r\n"
              "\r\n"
              "%s", read_buff);
+
+    parse_header(read_buff);
 
     n = write(connfd, buff, strlen(buff));
     if (n < 0)
