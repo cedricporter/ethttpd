@@ -11,112 +11,108 @@
 #include "http.h"
 #include "utils.h"
 #include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-typedef struct request
-{
-    int method;
-} HttpRequest;
 
 typedef enum {
-    M_INVALID,
-    M_GET,
-    M_POST
-} reqtype;
+    METHOD_INVALID,
+    METHOD_GET,
+    METHOD_POST
+} method_type;
 
-static reqtype check_reqtype(char *req)
+
+static method_type check_method(char *req)
 {
-	if(!strncmp("GET",req,3)) return M_GET;
-	if(!strncmp("POST",req,4)) return M_POST;
-
-    return M_INVALID;
+	if(!strncmp("GET",req,3)) return METHOD_GET;
+	if(!strncmp("POST",req,4)) return METHOD_POST;
+	return METHOD_INVALID;
 }
 
-static int parse_header(char *buf)
+
+int parse_header(char *buf)
 {
-    reqtype method;
-    char *uri, *doc, *p;
-    char *uri_start, *uri_end;
-    char *protocol_start, *protocol_end;
-    char ch;
+    method_type method;
+    char *doc, *uri, *t, *query = NULL;
+    struct stat st;
+    char *ext;
+    int i;
 
-    enum {
-        sw_start = 0,
-        sw_method,
-        sw_spaces_before_uri,
-        sw_uri,
-        sw_spaces_before_protocol,
-        sw_protocol,
-        sw_key,
-        sw_value
-    } state;
-
-    p = buf;
-    state = sw_start;
-
-    while (*p)
+    switch (method = check_method(buf))
     {
-        ch = *p;
-        switch (state)
-        {
-        case sw_start:
-        case sw_method:
-            switch (method = check_reqtype(buf))
-            {
-            case M_GET:
-                p += 3;
-                break;
-            case M_POST:
-                p += 4;
-                break;
-            default:
-                exit(-1);
-            }
-            state = sw_spaces_before_uri;
-            break;
-        case sw_spaces_before_uri:
-            if (isspace(ch))
-            {
-                p++;
-            }
-            else
-            {
-                state = sw_uri;
-                uri_start = p;
-            }
-            break;
-        case sw_uri:
-            if (!isspace(ch))
-                p++;
-            else
-            {
-                uri_end = p;
-                state = sw_spaces_before_protocol;
-            }
-            break;
-        case sw_spaces_before_protocol:
-            if (isspace(ch))
-            {
-                p++;
-            }
-            else
-            {
-                state = sw_protocol;
-                protocol_start = p;
-            }
-            break;
-        case sw_protocol:
-            if (!isspace(ch))
-            {
-                p++;
-            }
-            else
-            {
-                protocol_end = p;
-            }
-        }
-
+    case METHOD_GET:
+        uri = buf + 4;
+    case METHOD_POST:
+        uri = buf + 5;
+    default:
+        exit(1);
     }
 
+    doc = uri;
+
+    if (*doc == '/') ++doc;
+
+    for (t = doc; *t && !isspace(*t); ++t)
+    {
+        if (*t == '?')
+        {
+            query = t + 1;
+            break;
+        }
+    }
+
+    *t = '\0';
+
+    if (query)
+    {
+        for (++t; *t && !isspace(*t); ++t)
+            ;
+        *t = '\0';
+    }
+
+    if (!strlen(doc)) doc = ".";
+
+    if (stat(doc, &st) == 0)
+    {
+        /* directory */
+        if (S_ISDIR(st.st_mode))
+        {
+            /* leave */
+
+            goto leave;
+        }
+
+        /* mime type */
+        ext = strrchr(doc, '.');
+        if (ext)
+        {
+            ++ext;
+            /* check if it is a cgi */
+            for (i = 0; i < 0; ++i)
+            {
+                /* handle cgi */
+                /* return */
+            }
+
+            /* check its mime type  */
+        }
+
+        if (method == METHOD_GET)
+        {
+            /* send file */
+        }
+        else
+        {
+            /* 400 */
+        }
+    }
+    else
+    {
+        /* 404 */
+    }
+
+leave:
 
     return 0;
 }
