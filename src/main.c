@@ -30,7 +30,7 @@ int initialize(int port)
         exit(1);
     }
 
-    if((setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)))<0)
+    if((setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
     {
         perror("setsockopt failed");
         exit(EXIT_FAILURE);

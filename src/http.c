@@ -1,4 +1,4 @@
-/**
+  /**
  * @file   http.c
  * @author Hua Liang[Stupid ET]
  *
@@ -7,21 +7,15 @@
  *
  */
 
+
 #include "ethttpd.h"
 #include "http.h"
+#include "request.h"
 #include "utils.h"
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
-
-
-typedef enum {
-    METHOD_INVALID,
-    METHOD_GET,
-    METHOD_POST
-} method_type;
-
 
 
 static method_type check_method(char *req)
@@ -29,7 +23,7 @@ static method_type check_method(char *req)
 	if (!strncmp("GET", req, 3))
     {
         return METHOD_GET;
-    }
+     }
 	if (!strncmp("POST", req, 4))
     {
         return METHOD_POST;
@@ -37,6 +31,16 @@ static method_type check_method(char *req)
 	return METHOD_INVALID;
 }
 
+static int send_file(char *file_name, int connfd, const char *mime_type)
+{
+    return 0;
+}
+
+static int add_header(const char *key, const char *value)
+{
+
+    return 0;
+}
 
 int parse_header(char *buf)
 {
