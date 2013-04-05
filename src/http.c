@@ -16,9 +16,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "connection.h"
 
-
-static method_type check_method(char *req)
+method_type check_method(char *req)
 {
 	if (!strncmp("GET", req, 3))
     {
@@ -144,30 +144,46 @@ leave:
     return 0;
 }
 
+
 int handle_request(int connfd)
 {
-    char read_buff[MAXLINE];
-    char buff[MAXLINE];
-    int n;
+    connection_t *conn = connection_create(connfd);
 
-    /* read */
-    n = read(connfd, read_buff, MAXLINE);
-
-
-    /* write back */
-    snprintf(buff, sizeof(buff),
-             "HTTP/1.0 200 OK\r\n"
-             "Content-Type: text/plain\r\n"
-             "\r\n"
-             "%s", read_buff);
-
-    parse_header(read_buff);
-
-    n = write(connfd, buff, strlen(buff));
-    if (n < 0)
+    while (connection_handle(conn) != 0)
     {
-        return 1;
     }
+
+    free(conn);
 
     return 0;
 }
+
+
+/* int handle_request(int connfd) */
+/* { */
+/*     char read_buff[MAXLINE]; */
+/*     char buff[MAXLINE]; */
+/*     int n; */
+
+
+/*     /\* read *\/ */
+/*     n = read(connfd, read_buff, MAXLINE); */
+
+
+/*     /\* write back *\/ */
+/*     snprintf(buff, sizeof(buff), */
+/*              "HTTP/1.0 200 OK\r\n" */
+/*              "Content-Type: text/plain\r\n" */
+/*              "\r\n" */
+/*              "%s", read_buff); */
+
+/*     parse_header(read_buff); */
+
+/*     n = write(connfd, buff, strlen(buff)); */
+/*     if (n < 0) */
+/*     { */
+/*         return 1; */
+/*     } */
+
+/*     return 0; */
+/* } */

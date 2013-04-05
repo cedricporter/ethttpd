@@ -15,6 +15,7 @@
 #include "mpm_select.h"
 #include "mpm_prefork.h"
 #include "mpm_thread_pool.h"
+#include "connection.h"
 
 #define ETHTTPD_PORT 12345
 
@@ -54,6 +55,8 @@ int initialize(int port)
         exit(1);
     }
 
+    connection_state_table_init();
+
     return listenfd;
 }
 
@@ -64,7 +67,7 @@ int main(int argc, char **argv)
 
     listenfd = initialize(ETHTTPD_PORT);
 
-    mpm_thread_pool(listenfd);
+    mpm_prefork(listenfd);
 
     return 0;
 }

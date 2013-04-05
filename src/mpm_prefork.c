@@ -11,7 +11,7 @@
 #include "ethttpd.h"
 #include "http.h"
 
-#define PREFORK_MAX_CHIIDREN 20
+#define PREFORK_MAX_CHIIDREN 1
 
 static int nchildren = PREFORK_MAX_CHIIDREN;
 static int pids[PREFORK_MAX_CHIIDREN];

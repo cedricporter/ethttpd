@@ -11,7 +11,7 @@
 #define CONNECTION_H
 
 #include "buffer_pool.h"
-
+#include "request.h"
 
 typedef enum _connection_state
 {
@@ -29,18 +29,26 @@ typedef enum _connection_state
 struct connection_s
 {
     int fd;
-    http_request req;
 
     connection_state_t state;
 
+    http_request_t *req;
     buffer_pool_t *pool;
 };
 
 typedef struct connection_s connection_t;
 
 
-connection_state *connection_state_table;
+connection_state_t *connection_state_table;
 
 void connection_state_table_init();
+
+connection_t * connection_create(int fd);
+int connection_handle(connection_t *conn);
+int connection_parse_header(connection_t *conn);
+int connection_parse_request_line(connection_t *conn);
+int connection_prepare_data(connection_t *conn);
+void connection_destroy(connection_t *conn);
+
 
 #endif /* CONNECTION_H */
