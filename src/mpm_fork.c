@@ -1,10 +1,10 @@
 /**
  * @file   mpm_fork.c
- * @author Hua Liang[Stupid ET] 
- * 
- * @brief  
- * 
- * 
+ * @author Hua Liang[Stupid ET]
+ *
+ * @brief
+ *
+ *
  */
 
 #include "ethttpd.h"
@@ -37,6 +37,8 @@ int mpm_fork(int listenfd)
     int connfd;
     struct sockaddr_in peeraddr;
 
+    et_log("mpm_fork");
+
     set_signal_func();
 
     for (;;)
@@ -44,7 +46,7 @@ int mpm_fork(int listenfd)
         socklen_t peerlen = sizeof(peeraddr);
 
         et_log("Waiting...\n");
-        
+
         if ((connfd = accept(listenfd, (struct sockaddr *)&peeraddr, &peerlen)) < 0)
         {
             if (EINTR != errno)
@@ -57,7 +59,7 @@ int mpm_fork(int listenfd)
             close(listenfd);
             exit(handle_request(connfd));
         }
-        
+
         close(connfd);
-    }        
+    }
 }

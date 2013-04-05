@@ -12,6 +12,7 @@
 
 #include "buffer_pool.h"
 #include "request.h"
+#include "ethttpd.h"
 
 typedef enum _connection_state
 {
@@ -36,7 +37,6 @@ struct connection_s
     buffer_pool_t *pool;
 };
 
-typedef struct connection_s connection_t;
 
 
 connection_state_t *connection_state_table;

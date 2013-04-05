@@ -35,6 +35,8 @@ int mpm_thread(int listenfd)
     pthread_t tid;
     int *iptr;
 
+    et_log("mpm_thread");
+
     for (;;)
     {
         socklen_t peerlen = sizeof(peeraddr);

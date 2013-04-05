@@ -10,7 +10,7 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
-
+#include "ethttpd.h"
 #include "http.h"
 #include "utils.h"
 
@@ -29,7 +29,6 @@ struct http_request_s
 
 };
 
-typedef struct http_request_s http_request_t;
 
 
 http_request_t *http_request_create();

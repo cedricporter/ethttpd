@@ -52,6 +52,8 @@ int mpm_thread_pool(int listenfd)
     int i;
     int *iptr;
 
+    et_log("mpm_thread_pool with %d children", THREAD_POOL_MAXTHREADS);
+
     for (i = 0; i < THREAD_POOL_MAXTHREADS; ++i)
     {
         iptr = malloc(sizeof(int));

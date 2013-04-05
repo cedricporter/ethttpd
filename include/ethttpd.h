@@ -10,6 +10,12 @@
 #ifndef ETHTTPD_H
 #define ETHTTPD_H
 
+typedef struct connection_s connection_t;
+typedef struct http_request_s http_request_t;
+typedef struct buffer_pool_chunk_s buffer_pool_chunk_t;
+typedef struct buffer_pool_s buffer_pool_t;
+
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
