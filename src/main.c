@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 
     listenfd = initialize(ETHTTPD_PORT);
 
-    mpm_prefork(listenfd);
+    mpm_select(listenfd);
 
     return 0;
 }

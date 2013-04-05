@@ -15,6 +15,14 @@
 #include "connection.h"
 
 
+struct client_info_s
+{
+    connection_t *conn;
+};
+
+typedef struct client_info_s client_info_t;
+
+
 static int Fcntl(int fd, int cmd, int arg)
 {
 	int	n;
@@ -35,16 +43,12 @@ static void make_nonblock(int fd)
 }
 
 
-struct client_info_s
-{
-    connection_t *conn;
-};
-
 
 int mpm_select(int listenfd)
 {
     int maxfd;
-    int nready, client[FD_SETSIZE];
+    int nready;
+    client_info_t clients[FD_SETSIZE];
     int connfd, sockfd;
     socklen_t clilen;
     int i, n;
@@ -61,7 +65,7 @@ int mpm_select(int listenfd)
 
     for (i = 0; i < FD_SETSIZE; ++i)
     {
-        client[i] = -1;
+        clients[i].conn = NULL;
     }
 
     FD_ZERO(&allset);
@@ -84,11 +88,12 @@ int mpm_select(int listenfd)
                 exit(1);
             }
 
+            /* new client */
             for (i = 0; i < FD_SETSIZE; ++i)
             {
-                if (client[i] < 0)
+                if (clients[i].conn == 0)
                 {
-                    client[i] = connfd;
+                    clients[i].conn = connection_create(connfd);
                     break;
                 }
             }
@@ -108,30 +113,35 @@ int mpm_select(int listenfd)
 
         for (i = 0; i < FD_SETSIZE; ++i)
         {
-            if ((sockfd = client[i]) < 0)
+            if (clients[i].conn && (sockfd = clients[i].conn->fd) < 0)
                 continue;
             if (FD_ISSET(sockfd, &rset))
             {
                 et_log("reading");
                 if ((n = read(sockfd, buf, MAXLINE)) == 0)
                 {
+                    /* done */
                     close(sockfd);
                     FD_CLR(sockfd, &allset);
-                    client[i] = -1;
                     et_log("close sockfd");
+
+                    connection_destroy(clients[i].conn);
+                    clients[i].conn = NULL;
                 }
                 else if (n < 0)
                 {
                     exit(1);
                 }
-                else
+                else                    /* n > 0 */
                 {
                     et_log("write and close");
                     write(sockfd, "HTTP/1.0 200 OK\r\n\r\n", strlen("HTTP/1.1 200 OK\r\n\r\n"));
                     write(sockfd, buf, n);
                     close(sockfd);
                     FD_CLR(sockfd, &allset);
-                    client[i] = -1;
+
+                    connection_destroy(clients[i].conn);
+                    clients[i].conn = NULL;
                 }
 
                 if (--nready <= 0)

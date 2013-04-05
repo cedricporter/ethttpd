@@ -21,6 +21,7 @@ static buffer_pool_chunk_t * buffer_pool_chunk_create(int size)
     pool_chunk->data = malloc(size);
     pool_chunk->length = 0;
     pool_chunk->max_length = size;
+    pool_chunk->next = NULL;
 
     return pool_chunk;
 }
