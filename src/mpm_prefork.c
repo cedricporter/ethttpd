@@ -76,8 +76,9 @@ static int child_make(int i, int listenfd)
 int mpm_prefork(int listenfd)
 {
     int i;
-
     struct sigaction sa;
+
+    et_log("mpm_prefork with %d children", PREFORK_MAX_CHIIDREN);
     sa.sa_handler = &sig_int;
 
     sigaction(SIGINT, &sa, NULL);

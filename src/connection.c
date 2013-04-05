@@ -97,49 +97,36 @@ int connection_prepare_data(connection_t *conn)
 }
 
 
-int connection_handle(connection_t *conn)
+
+
+int connection_response(connection_t *conn)
 {
-    switch (conn->state)
+    buffer_pool_chunk_t *chunk;
+    int n;
+    char buf[MAXLINE];
+    char *chunk_buf;
+
+    chunk = buffer_pool_get_head(conn->pool);
+    chunk_buf = buffer_pool_chunk_get_buf(chunk);
+
+
+    /* write back */
+    snprintf(buf, sizeof(buf),
+             "HTTP/1.0 200 OK\r\n"
+             "Content-Type: text/plain\r\n"
+             "\r\n"
+             "%s", chunk_buf);
+
+    if ((n = write(conn->fd, buf, strlen(buf))) > 0)
     {
-    case conn_state_start:
-        et_log("state: start");
-        connection_change_next_state(conn);
-        break;
-    case conn_state_reading:
-        et_log("state: reading");
-        connection_prepare_data(conn);
-        break;
-    case conn_state_read_done:
-        et_log("state: read_done");
-        connection_change_next_state(conn);
-        break;
-    case conn_state_parsing:
-        et_log("state: parsing");
-        connection_parse_request_line(conn);
-        connection_parse_header(conn);
-        connection_change_next_state(conn);
-        break;
-    case conn_state_parse_done:
-        et_log("state: parse done");
-        connection_change_next_state(conn);
-        break;
-    case conn_state_writing:
-        et_log("state: writing");
-        connection_change_next_state(conn);
-        break;
-    case conn_state_write_done:
-        et_log("state: write done");
-        connection_change_next_state(conn);
-        break;
-    case conn_state_done:
-        et_log("state: done");
-        return 0;
-    default:
-        et_log("programming error at connection_handle");
-        exit(EXIT_FAILURE);
+
+    }
+    else if (n < 0)
+    {
+        perror("write");
     }
 
-    return -1;
+    return 0;
 }
 
 
@@ -194,4 +181,52 @@ int connection_parse_header(connection_t *conn)
 {
 
     return 0;
+}
+
+
+
+int connection_handle(connection_t *conn)
+{
+    switch (conn->state)
+    {
+    case conn_state_start:
+        et_log("state: start");
+        connection_change_next_state(conn);
+        break;
+    case conn_state_reading:
+        et_log("state: reading");
+        connection_prepare_data(conn);
+        break;
+    case conn_state_read_done:
+        et_log("state: read_done");
+        connection_change_next_state(conn);
+        break;
+    case conn_state_parsing:
+        et_log("state: parsing");
+        connection_parse_request_line(conn);
+        connection_parse_header(conn);
+        connection_change_next_state(conn);
+        break;
+    case conn_state_parse_done:
+        et_log("state: parse done");
+        connection_change_next_state(conn);
+        break;
+    case conn_state_writing:
+        et_log("state: writing");
+        connection_response(conn);
+        connection_change_next_state(conn);
+        break;
+    case conn_state_write_done:
+        et_log("state: write done");
+        connection_change_next_state(conn);
+        break;
+    case conn_state_done:
+        et_log("state: done");
+        return 0;
+    default:
+        et_log("programming error at connection_handle");
+        exit(EXIT_FAILURE);
+    }
+
+    return -1;
 }

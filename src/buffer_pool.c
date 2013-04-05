@@ -37,6 +37,12 @@ static void buffer_pool_chunk_destroy(buffer_pool_chunk_t *chunk)
 }
 
 
+char * buffer_pool_chunk_get_buf(buffer_pool_chunk_t *chunk)
+{
+    return chunk->data;
+}
+
+
 int buffer_pool_chunk_set(buffer_pool_chunk_t *chunk, char *data, int length)
 {
     if (length > chunk->max_length)

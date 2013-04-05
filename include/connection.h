@@ -45,9 +45,6 @@ void connection_state_table_init();
 
 connection_t * connection_create(int fd);
 int connection_handle(connection_t *conn);
-int connection_parse_header(connection_t *conn);
-int connection_parse_request_line(connection_t *conn);
-int connection_prepare_data(connection_t *conn);
 void connection_destroy(connection_t *conn);
 
 

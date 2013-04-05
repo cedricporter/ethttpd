@@ -18,7 +18,6 @@
 #include <sys/errno.h>
 #include <netdb.h>
 
-
 #include <unistd.h>
 
 #include <stdio.h>
@@ -26,8 +25,9 @@
 #include <strings.h>
 #include <string.h>
 
+#include "utils.h"
 
 #define MAXLINE 4096
 
 #endif /* ETHTTPD_H */
-/****/ 
+/****/

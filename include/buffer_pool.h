@@ -41,6 +41,8 @@ int buffer_pool_chunk_length(buffer_pool_chunk_t *chunk);
 int buffer_pool_chunk_max_length(buffer_pool_chunk_t *chunk);
 int buffer_pool_chunk_set(buffer_pool_chunk_t *chunk, char *data, int length);
 int buffer_pool_chunk_set_at(buffer_pool_chunk_t *chunk, int where, char *data, int length);
+char * buffer_pool_chunk_get_buf(buffer_pool_chunk_t *chunk);
+
 
 
 #endif /* BUFFER_POOL_H */
