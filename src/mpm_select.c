@@ -40,8 +40,12 @@ static void make_nonblock(int fd)
     /* make listenfd nonblock */
     val = Fcntl(fd, F_GETFL, 0);
     Fcntl(fd, F_SETFL, val | O_NONBLOCK);
-}
 
+    if (val & O_NONBLOCK)
+    {
+        et_log("fd %d is already nonblock", fd);
+    }
+}
 
 
 int mpm_select(int listenfd)
@@ -52,9 +56,10 @@ int mpm_select(int listenfd)
     int connfd, sockfd;
     socklen_t clilen;
     int i, n;
-    fd_set allset, rset;
+    fd_set allset, rset, wset;
     struct sockaddr_in cliaddr;
     char buf[MAXLINE];
+    connection_t *conn;
 
     et_log("mpm_select");
 
@@ -69,6 +74,7 @@ int mpm_select(int listenfd)
     }
 
     FD_ZERO(&allset);
+    FD_ZERO(&wset);
     FD_SET(listenfd, &allset);
 
     for (;;)
@@ -87,6 +93,8 @@ int mpm_select(int listenfd)
                 perror("accept()");
                 exit(1);
             }
+
+            make_nonblock(connfd);
 
             /* new client */
             for (i = 0; i < FD_SETSIZE; ++i)
@@ -111,13 +119,39 @@ int mpm_select(int listenfd)
                 continue;
         }
 
+        /* serve client */
         for (i = 0; i < FD_SETSIZE; ++i)
         {
-            if (clients[i].conn && (sockfd = clients[i].conn->fd) < 0)
+
+            if (!(conn = clients[i].conn) || (sockfd = conn->fd) < 0)
                 continue;
             if (FD_ISSET(sockfd, &rset))
             {
                 et_log("reading");
+
+                /* for (;;) */
+                /* { */
+                /*     if ((n = connection_prepare_data(conn)) > 0) */
+                /*     { */
+                /*         FD_SET(conn->fd, &wset); */
+                /*     } */
+                /*     else if (n < 0) */
+                /*     { */
+                /*         if (errno == EWOULDBLOCK) */
+                /*             continue; */
+                /*     } */
+                /*     else */
+                /*     { */
+                /*         /\* done *\/ */
+                /*         close(sockfd); */
+                /*         FD_CLR(sockfd, &allset); */
+                /*         et_log("close sockfd"); */
+
+                /*         connection_destroy(clients[i].conn); */
+                /*         clients[i].conn = NULL; */
+                /*     } */
+                /* } */
+
                 if ((n = read(sockfd, buf, MAXLINE)) == 0)
                 {
                     /* done */
@@ -130,6 +164,11 @@ int mpm_select(int listenfd)
                 }
                 else if (n < 0)
                 {
+                    if (errno == EWOULDBLOCK)
+                    {
+                        continue;
+                    }
+                    perror("read in mpm_select");
                     exit(1);
                 }
                 else                    /* n > 0 */

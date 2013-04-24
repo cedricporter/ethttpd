@@ -164,7 +164,7 @@ int handle_request(int connfd)
     {
     }
 
-    free(conn);
+    connection_destroy(conn);
 
     return 0;
 }

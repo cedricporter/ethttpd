@@ -63,7 +63,6 @@ int connection_prepare_data(connection_t *conn)
 {
     char buf[MAXLINE];
     int n;
-    int success = 0;
 
     buffer_pool_chunk_t *chunk = buffer_pool_get_last(conn->pool);
 
@@ -80,23 +79,15 @@ int connection_prepare_data(connection_t *conn)
             chunk = buffer_pool_new(conn->pool, MAXLINE);
             buffer_pool_chunk_set(chunk, buf, n);
         }
-        success |= 1;
     }
     else if (n < 0)
     {
-        perror("read");
-    }
-
-    if (success)
-    {
-        /* change to next state */
-        connection_change_next_state(conn);
+        if (errno != EWOULDBLOCK)
+            perror("read");
     }
 
     return n;
 }
-
-
 
 
 int connection_response(connection_t *conn)
@@ -195,7 +186,8 @@ int connection_handle(connection_t *conn)
         break;
     case conn_state_reading:
         et_log("state: reading");
-        connection_prepare_data(conn);
+        if (connection_prepare_data(conn) > 0)
+            connection_change_next_state(conn);
         break;
     case conn_state_read_done:
         et_log("state: read_done");
