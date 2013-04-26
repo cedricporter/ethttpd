@@ -13,6 +13,43 @@
 #include "ethttpd.h"
 #include <fcntl.h>
 #include "connection.h"
+#include "et_event.h"
+
+
+static fd_set master_read_fd_set;
+static fd_set master_write_fd_set;
+static fd_set work_read_fd_set;
+static fd_set work_write_fd_set;
+
+static int max_fd;
+static unsigned int nevents;
+
+static et_event_t **event_index;
+
+
+void et_select_init()
+{
+    
+}
+
+void et_select_add_event(et_event_t *ev)
+{
+    
+}
+
+void et_select_del_event(et_event_t *ev)
+{
+    
+}
+
+
+
+
+
+
+
+
+
 
 
 struct client_info_s
@@ -192,3 +229,4 @@ int mpm_select(int listenfd)
     }
 
 }
+
