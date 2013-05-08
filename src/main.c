@@ -60,6 +60,54 @@ int initialize(int port)
     return listenfd;
 }
 
+void et_init_cycle(int listenfd)
+{
+    et_event_t *rev;
+    et_connection_t *c;
+
+    c = et_get_connection(listenfd);
+
+    rev = c->read;
+
+    rev->accept = 1;
+
+    et_add_event(rev, ET_READ_EVENT);
+
+    rev->handler = et_event_accept;
+}
+
+
+void
+et_process_events_and_timers();
+
+void
+et_process_cycle()
+{
+    for (;;)
+    {
+        et_process_events_and_timers();
+    }
+}
+
+
+void
+et_process_events_and_timers()
+{
+    et_process_events();
+
+    /* accept events */
+    if (et_posted_accept_events)
+    {
+        et_event_process_posted(&et_posted_accept_events);
+    }
+
+    /* common events */
+    if (et_posted_events)
+    {
+        et_event_process_posted(&et_posted_events);
+    }
+}
+
 
 int main(int argc, char **argv)
 {
@@ -70,7 +118,13 @@ int main(int argc, char **argv)
     et_event_module = et_select_module;
     et_event_actions = et_event_module.actions;
 
-    mpm_select(listenfd);
+    et_event_actions.init();
+
+        et_init_cycle(listenfd);
+
+    et_process_cycle();
+
+    /* mpm_select(listenfd); */
 
     return 0;
 }

@@ -62,7 +62,7 @@ et_http_finalize_request(et_event_t *ev)
         et_log("write back");
 
         close(c->fd);
-        et_del_event(ev, ET_WRITE_EVENT);
+        /* et_del_event(ev, ET_WRITE_EVENT); */
         et_del_event(ev, ET_READ_EVENT);
 
     }
@@ -118,4 +118,42 @@ et_event_read(et_event_t *ev)
         ev->handler = et_http_process_request;
         et_http_process_request(ev);
     }
+}
+
+
+void
+et_event_process_posted(et_event_t **posted)
+{
+    et_event_t *ev;
+    
+    for (;;)
+    {
+        ev = (et_event_t *) *posted;
+        
+        /* pop event */
+        if (ev == NULL)
+        {
+            return;
+        }
+
+        et_delete_posted_event(ev);
+        
+        ev->handler(ev);
+    }
+}
+
+
+void
+et_delete_posted_event(et_event_t *ev)
+{
+    *(ev->prev) = ev->next;             /* modified head */
+
+    if (ev->next)
+    {
+        ev->next->prev = ev->prev;
+    }
+
+    ev->prev = NULL;
+
+    et_log("delete posted event ");
 }

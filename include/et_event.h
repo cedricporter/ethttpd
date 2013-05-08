@@ -76,6 +76,9 @@ extern et_event_module_t et_event_module;
 extern et_event_actions_t et_event_actions;
 
 void et_event_accept(et_event_t *ev);
+void et_event_process_posted(et_event_t **posted);
+void et_delete_posted_event(et_event_t *ev);
+
 
 
 #endif /* ET_EVENT_H */

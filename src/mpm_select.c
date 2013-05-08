@@ -107,11 +107,6 @@ et_select_del_event(et_event_t *ev, int event)
         FD_CLR(c->fd, &master_write_fd_set);
     }
 
-    if (max_fd == c->fd)
-    {
-        max_fd = -1;
-    }
-
     if (ev->index < --nevents)
     {
         e = event_index[nevents];
@@ -142,20 +137,6 @@ et_locked_post_event(et_event_t *ev, et_event_t **queue)
     }
 }
 
-void
-et_delete_posted_event(et_event_t *ev)
-{
-    *(ev->prev) = ev->next;             /* modified head */
-
-    if (ev->next)
-    {
-        ev->next->prev = ev->prev;
-    }
-
-    ev->prev = NULL;
-
-    et_log("delete posted event ");
-}
 
 static void
 et_select_process_event()
@@ -186,6 +167,7 @@ et_select_process_event()
     {
 
     }
+    et_log("select ready: %d", ready);
 
     nready = 0;
 
@@ -226,80 +208,9 @@ et_select_process_event()
     }
 }
 
-void et_init_cycle(int listenfd)
-{
-    et_event_t *rev;
-    et_connection_t *c;
 
-    c = et_get_connection(listenfd);
 
-    rev = c->read;
 
-    rev->accept = 1;
-
-    et_add_event(rev, ET_READ_EVENT);
-
-    rev->handler = et_event_accept;
-}
-
-void
-et_event_process_posted(et_event_t **posted)
-{
-    et_event_t *ev;
-    
-    for (;;)
-    {
-        ev = (et_event_t *) *posted;
-        
-        /* pop event */
-        if (ev == NULL)
-        {
-            return;
-        }
-
-        et_delete_posted_event(ev);
-        
-        ev->handler(ev);
-    }
-}
-
-void
-et_process_events_and_timers()
-{
-    et_select_process_event();
-
-    /* accept events */
-    if (et_posted_accept_events)
-    {
-        et_event_process_posted(&et_posted_accept_events);
-    }
-
-    /* common events */
-    if (et_posted_events)
-    {
-        et_event_process_posted(&et_posted_events);
-    }
-}
-
-void
-et_process_cycle()
-{
-    for (;;)
-    {
-        et_process_events_and_timers();
-    }
-}
-
-int mpm_select(int listenfd)
-{
-    et_select_init();
-
-    et_init_cycle(listenfd);
-
-    et_process_cycle();
-
-    return 0;
-}
 
 
 /* ------------------------------ */
