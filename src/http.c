@@ -148,9 +148,9 @@ method_type check_method(char *req)
 
 int block_handle_request(int connfd)
 {
-    connection_t *conn = connection_create(connfd);
-    block_handle(conn);
-    free(conn);
+    /* connection_t *conn = connection_create(connfd); */
+    /* block_handle(conn); */
+    /* free(conn); */
 
     return 0;
 }
@@ -158,13 +158,13 @@ int block_handle_request(int connfd)
 
 int handle_request(int connfd)
 {
-    connection_t *conn = connection_create(connfd);
+    /* connection_t *conn = connection_create(connfd); */
 
-    while (connection_handle(conn) != 0)
-    {
-    }
+    /* while (connection_handle(conn) != 0) */
+    /* { */
+    /* } */
 
-    connection_destroy(conn);
+    /* connection_destroy(conn); */
 
     return 0;
 }

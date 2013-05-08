@@ -55,7 +55,7 @@ int initialize(int port)
         exit(1);
     }
 
-    connection_state_table_init();
+    /* connection_state_table_init(); */
 
     return listenfd;
 }
@@ -66,6 +66,9 @@ int main(int argc, char **argv)
     int listenfd;
 
     listenfd = initialize(ETHTTPD_PORT);
+
+    et_event_module = et_select_module;
+    et_event_actions = et_event_module.actions;
 
     mpm_select(listenfd);
 

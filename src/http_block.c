@@ -14,6 +14,8 @@
 
 int block_handle(connection_t *conn)
 {
-    while (connection_handle(conn) != 0)
-        ;
+    /* while (connection_handle(conn) != 0) */
+    /*     ; */
+
+    return 0;
 }

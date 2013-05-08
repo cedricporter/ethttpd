@@ -12,7 +12,7 @@
 #include "connection.h"
 
 
-int nonblock_handle(connection_t *conn)
-{
-    return connection_handle(conn);
-}
+/* int nonblock_handle(connection_t *conn) */
+/* { */
+/*     return connection_handle(conn); */
+/* } */
