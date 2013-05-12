@@ -11,16 +11,28 @@
 #include "ethttpd.h"
 
 
-http_request_t *http_request_create()
+et_http_request_t *
+et_http_request_create()
 {
-    http_request_t *req = malloc(sizeof(http_request_t));
-    memset(req, 0, sizeof(http_request_t));
+    et_http_request_t	*r;
 
-    return req;
+    r = calloc(1, sizeof(et_http_request_t));
+    r->header_in = et_string_create(0);
+    r->uri = et_string_create(0);
+
+    r->file_fd = -1;
+    r->offset = 0;
+
+    r->state = ET_REQUEST_NOTHING;
+
+    return r;
 }
 
-
-void http_request_destroy(http_request_t *req)
+void
+et_http_request_free(et_http_request_t * r)
 {
-    free(req);
+    et_string_destroy(r->header_in);
+    et_string_destroy(r->uri);
+
+    free(r);
 }

@@ -42,5 +42,10 @@ typedef struct et_http_request_s et_http_request_t;
 
 #define MAXLINE 4096
 
+#define ET_HTTP_METHOD_GET 		0
+#define ET_HTTP_METHOD_POST		1
+#define ET_HTTP_METHOD_HEAD		2
+
+
 #endif /* ETHTTPD_H */
 /****/
