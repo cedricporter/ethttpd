@@ -14,6 +14,21 @@
 #include "http.h"
 #include "utils.h"
 
+typedef void (*et_http_event_handler_pt)(et_http_request_t *r);
+
+struct et_http_request_s
+{
+    et_connection_t			 	*connection;
+
+    int 						method;
+    char						*request_line;
+    char						*uri;
+
+    et_http_event_handler_pt	read_event_handler;
+    et_http_event_handler_pt	write_event_handler;
+};
+
+
 
 struct http_request_s
 {

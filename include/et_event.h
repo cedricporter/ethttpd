@@ -1,10 +1,10 @@
 /**
  * @file   et_event.h
- * @author Hua Liang[Stupid ET] 
- * 
- * @brief  
- * 
- * 
+ * @author Hua Liang[Stupid ET]
+ *
+ * @brief
+ *
+ *
  */
 
 #ifndef ET_EVENT_H
@@ -38,21 +38,21 @@ extern et_event_t *et_posted_events;
 
 struct et_event_s
 {
-    void 	*data;
-    
-    unsigned write:1;
+    void 		*data;
 
-    unsigned accept:1;
+    unsigned 	write:1;
 
-    unsigned ready:1;
+    unsigned 	accept:1;
 
-    unsigned int index;
+    unsigned 	ready:1;
+
+    int 		index;
 
     et_event_handler_pt  handler;
 
     et_event_t	*next;
     et_event_t	**prev;
-    
+
 };
 
 

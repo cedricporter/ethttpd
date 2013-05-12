@@ -19,6 +19,11 @@
 
 #define ETHTTPD_PORT 12345
 
+void et_process_events_and_timers();
+int initialize(int port);
+void et_init_cycle(int listenfd);
+void et_process_cycle();
+
 
 int initialize(int port)
 {
@@ -30,6 +35,8 @@ int initialize(int port)
     {
         exit(1);
     }
+
+    et_log("listenfd: %d", listenfd);
 
     if((setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
     {
@@ -60,6 +67,7 @@ int initialize(int port)
     return listenfd;
 }
 
+
 void et_init_cycle(int listenfd)
 {
     et_event_t *rev;
@@ -76,9 +84,6 @@ void et_init_cycle(int listenfd)
     rev->handler = et_event_accept;
 }
 
-
-void
-et_process_events_and_timers();
 
 void
 et_process_cycle()
@@ -115,16 +120,21 @@ int main(int argc, char **argv)
 
     listenfd = initialize(ETHTTPD_PORT);
 
-    et_event_module = et_select_module;
-    et_event_actions = et_event_module.actions;
+    if (0)
+    {
+        mpm_prefork(listenfd);
+    }
+    else if (1)
+    {
+        et_event_module = et_select_module;
+        et_event_actions = et_event_module.actions;
 
-    et_event_actions.init();
+        et_event_actions.init();
 
         et_init_cycle(listenfd);
 
-    et_process_cycle();
-
-    /* mpm_select(listenfd); */
+        et_process_cycle();
+    }
 
     return 0;
 }
