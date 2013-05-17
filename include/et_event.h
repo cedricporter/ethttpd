@@ -78,6 +78,14 @@ extern et_event_actions_t et_event_actions;
 void et_event_accept(et_event_t *ev);
 void et_event_process_posted(et_event_t **posted);
 void et_delete_posted_event(et_event_t *ev);
+void et_http_init_request(et_event_t *ev);
+
+
+void et_http_init_request(et_event_t *ev);
+int et_http_read_request_header(et_http_request_t *r);
+void et_http_finalize_request(et_http_request_t *r);
+void et_http_process_request(et_http_request_t *r);
+int et_http_parse_request_line(et_http_request_t *r);
 
 
 

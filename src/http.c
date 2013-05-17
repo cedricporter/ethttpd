@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "connection.h"
-
+#include "et_event.h"
 
 method_type check_method(char *req)
 {
@@ -165,6 +165,27 @@ int handle_request(int connfd)
     /* } */
 
     /* connection_destroy(conn); */
+
+    et_http_request_t	*r;
+    et_connection_t *c;
+
+    et_log("==========");
+
+
+    c = et_get_connection(connfd);
+
+    /* create a request object */
+    r = et_http_request_create();
+
+    c->data = r;
+    r->connection = c;
+
+    et_http_read_request_header(r);
+    et_http_parse_request_line(r);
+    et_http_process_request(r);
+
+    /* et_free_connetion(c); */
+    et_log("----------");
 
     return 0;
 }

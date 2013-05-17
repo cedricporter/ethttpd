@@ -10,8 +10,25 @@
 #include "mpm_prefork.h"
 #include "ethttpd.h"
 #include "http.h"
+#include "et_event.h"
 
-#define PREFORK_MAX_CHIIDREN 1
+#define PREFORK_MAX_CHIIDREN 50
+
+
+static void et_empty_add_event(et_event_t *ev, int event) {}
+static void et_empty_del_event(et_event_t *ev, int event) {}
+static void et_empty_init() {}
+static void et_empty_process_event() {}
+
+et_event_module_t et_empty_module = {
+    {
+        et_empty_add_event,
+        et_empty_del_event,
+        et_empty_process_event,
+        et_empty_init
+    }
+};
+
 
 static int nchildren = PREFORK_MAX_CHIIDREN;
 static int pids[PREFORK_MAX_CHIIDREN];

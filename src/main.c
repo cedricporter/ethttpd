@@ -117,15 +117,21 @@ et_process_events_and_timers()
 int main(int argc, char **argv)
 {
     int listenfd;
+    int config;
 
     listenfd = initialize(ETHTTPD_PORT);
 
-    if (0)
+    config = 1;
+
+    switch (config)
     {
+    case 1:
+        et_event_module = et_empty_module;
+        et_event_actions = et_event_module.actions;
+
         mpm_prefork(listenfd);
-    }
-    else if (1)
-    {
+        break;
+    case 2:
         et_event_module = et_select_module;
         et_event_actions = et_event_module.actions;
 
@@ -134,7 +140,7 @@ int main(int argc, char **argv)
         et_init_cycle(listenfd);
 
         et_process_cycle();
+        break;
     }
-
     return 0;
 }

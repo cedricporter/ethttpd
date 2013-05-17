@@ -24,10 +24,13 @@ et_event_actions_t et_event_actions;
 
 void et_http_init_request(et_event_t *ev);
 int et_http_read_request_header(et_http_request_t *r);
+void et_http_finalize_request(et_http_request_t *r);
+void et_http_process_request(et_http_request_t *r);
 
 
 
-static int Fcntl(int fd, int cmd, int arg)
+static int
+Fcntl(int fd, int cmd, int arg)
 {
 	int	n;
 
@@ -83,6 +86,7 @@ et_event_accept(et_event_t *ev)
     rev->handler = et_http_init_request; /* et_event_read; */
 }
 
+
 static void
 et_http_close_connection(et_connection_t *c)
 {
@@ -105,6 +109,7 @@ et_http_close_connection(et_connection_t *c)
     et_http_request_free(r);
     et_free_connetion(c);
 }
+
 
 /* 最后完成请求 */
 void
@@ -165,6 +170,7 @@ et_http_finalize_request(et_http_request_t *r)
         /* write */
     }
 
+    /* 发送文件 */
     while ((rdsize = read(file_fd, r->buffer + r->offset, MAXLINE)) > 0)
     {
         et_log("read size: %d", rdsize);
@@ -220,6 +226,7 @@ et_http_core_run_phases(et_http_request_t *r)
 {
 
 }
+
 
 void
 et_http_request_handler(et_event_t *ev)
@@ -304,7 +311,7 @@ et_http_process_request_headers(et_event_t *ev)
     }
 }
 
-static int
+int
 et_http_parse_request_line(et_http_request_t *r)
 {
     const char	*buf;
@@ -386,7 +393,8 @@ et_http_process_request_line(et_event_t *ev)
 }
 
 
-void et_http_init_request(et_event_t *ev)
+void
+et_http_init_request(et_event_t *ev)
 {
     et_connection_t *c;
     et_http_request_t *r;
