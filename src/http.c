@@ -171,7 +171,6 @@ int handle_request(int connfd)
 
     et_log("==========");
 
-
     c = et_get_connection(connfd);
 
     /* create a request object */
@@ -181,8 +180,10 @@ int handle_request(int connfd)
     r->connection = c;
 
     et_http_read_request_header(r);
-    et_http_parse_request_line(r);
-    et_http_process_request(r);
+    if (et_http_parse_request_line(r) == ET_OK)
+    {
+        et_http_process_request(r);
+    }
 
     /* et_free_connetion(c); */
     et_log("----------");

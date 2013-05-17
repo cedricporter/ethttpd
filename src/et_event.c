@@ -144,7 +144,7 @@ et_http_finalize_request(et_http_request_t *r)
     {
         file_fd = r->file_fd;
     }
-    else if ((file_fd = open("a.html", O_RDONLY)) == -1)
+    else if ((file_fd = open(filename, O_RDONLY)) == -1)
     {
         perror("open");
         et_log("open file error: %s", filename);
@@ -320,7 +320,7 @@ et_http_parse_request_line(et_http_request_t *r)
 
     buf = et_string_get_buf(r->header_in);
 
-    if (buf[0] == 'G' && buf[1] == 'E' && buf[2] == 'T')
+    if (buf && buf[0] == 'G' && buf[1] == 'E' && buf[2] == 'T')
     {
         et_log("request method: GET");
 

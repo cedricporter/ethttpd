@@ -121,17 +121,27 @@ int main(int argc, char **argv)
 
     listenfd = initialize(ETHTTPD_PORT);
 
-    config = 1;
+    config = 4;
+    et_event_module = et_empty_module;
 
     switch (config)
     {
     case 1:
-        et_event_module = et_empty_module;
         et_event_actions = et_event_module.actions;
 
         mpm_prefork(listenfd);
         break;
     case 2:
+        et_event_actions = et_event_module.actions;
+
+        mpm_thread(listenfd);
+        break;
+    case 3:
+        et_event_actions = et_event_module.actions;
+
+        mpm_thread_pool(listenfd);
+        break;
+    default:
         et_event_module = et_select_module;
         et_event_actions = et_event_module.actions;
 
