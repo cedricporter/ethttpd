@@ -16,7 +16,7 @@ et_http_request_create()
 {
     et_http_request_t	*r;
 
-    r = calloc(1, sizeof(et_http_request_t));
+    r = (et_http_request_t *)calloc(1, sizeof(et_http_request_t));
     r->header_in = et_string_create(0);
     r->uri = et_string_create(0);
 

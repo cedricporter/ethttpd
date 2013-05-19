@@ -4,8 +4,8 @@ top=../
 ethttpd_SOURCES=$(wildcard *.c)
 ethttpd_OBJ=$(patsubst %.c, %.o, $(wildcard *.c))
 
-CFLAGS=-I ../include -g -Wall
-CC=gcc
+CFLAGS=-I ../include -g -Wall -fpermissive
+CC=g++
 C_COMPILE=$(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 C_DEPENDENCIES=-Wp,-MD,.deps/$(*F).P
 C_LINK=$(CC) $(CFLAGS) $(LDFLAGS) -L. -pthread
@@ -35,6 +35,6 @@ print-info:
 	@echo "deps: " $(DEP_FILES)
 
 check-syntax:
-	$(C_COMPILE) $(C_DEPENDENCIES) -Wall -Wextra -Wno-unused-parameter -pedantic -fsyntax-only $(CHK_SOURCES) 
+	$(C_COMPILE) $(C_DEPENDENCIES) -Wall -Wextra -Wno-unused-parameter -pedantic -fsyntax-only $(CHK_SOURCES)
 
 # End of Makefile

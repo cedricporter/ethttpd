@@ -27,6 +27,6 @@ void et_string_set_with_end(et_string *str, const char *buf,
                             const char *end);
 
 
-void et_log(char *s, ...);
+void et_log(const char *s, ...);
 
 #endif /* UTILS_H */

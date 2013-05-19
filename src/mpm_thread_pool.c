@@ -56,7 +56,7 @@ int mpm_thread_pool(int listenfd)
 
     for (i = 0; i < THREAD_POOL_MAXTHREADS; ++i)
     {
-        iptr = malloc(sizeof(int));
+        iptr = (int *)malloc(sizeof(int));
         *iptr = listenfd;
         pthread_create(threads + i, NULL, &handle_it, iptr);
     }

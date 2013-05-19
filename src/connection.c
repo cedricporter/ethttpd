@@ -23,9 +23,9 @@ et_get_connection(int fd)
     et_connection_t	*c;
     et_event_t		*rev, *wev;
 
-    c = calloc(1, sizeof(et_connection_t));
-    rev = calloc(1, sizeof(et_event_t));
-    wev = calloc(1, sizeof(et_event_t));
+    c = (et_connection_t *)calloc(1, sizeof(et_connection_t));
+    rev = (et_event_t *)calloc(1, sizeof(et_event_t));
+    wev = (et_event_t *)calloc(1, sizeof(et_event_t));
 
     c->fd = fd;
     c->write = wev;

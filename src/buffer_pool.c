@@ -17,8 +17,8 @@
 
 static buffer_pool_chunk_t * buffer_pool_chunk_create(int size)
 {
-    buffer_pool_chunk_t *pool_chunk = malloc(sizeof(buffer_pool_chunk_t));
-    pool_chunk->data = malloc(size);
+    buffer_pool_chunk_t *pool_chunk = (buffer_pool_chunk_t *)malloc(sizeof(buffer_pool_chunk_t));
+    pool_chunk->data = (char *)malloc(size);
     pool_chunk->length = 0;
     pool_chunk->max_length = size;
     pool_chunk->next = NULL;
@@ -102,7 +102,7 @@ static void buffer_pool_append(buffer_pool_t *pool, buffer_pool_chunk_t *chunk)
 /* create a buffer pool */
 buffer_pool_t *buffer_pool_create()
 {
-    buffer_pool_t *pool = malloc(sizeof(buffer_pool_t));
+    buffer_pool_t *pool = (buffer_pool_t *)malloc(sizeof(buffer_pool_t));
     pool->head = buffer_pool_chunk_create(MAXLINE);
 
     return pool;

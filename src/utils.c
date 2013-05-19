@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 
-void et_log(char *s, ...)
+void et_log(const char *s, ...)
 {
 	va_list ap;
     fprintf(stderr, "[ethttpd log]: ");
@@ -27,9 +27,9 @@ void et_log(char *s, ...)
 
 et_string * et_string_create(char *buf)
 {
-    et_string *str = malloc(sizeof(et_string));
+    et_string *str = (et_string *)malloc(sizeof(et_string));
     str->length = str->max_length = buf ? strlen(buf) : 0;
-    str->buf = buf ? malloc(str->length + 1) : 0;
+    str->buf = (char *)(buf ? malloc(str->length + 1) : 0);
 
     return str;
 }
@@ -53,7 +53,7 @@ void et_string_set(et_string *str, const char *buf)
     /* realloc memory if necessary */
     if (len > str->max_length)
     {
-        p = realloc(str->buf, len + 1);
+        p = (char *)realloc(str->buf, len + 1);
         if (p)
         {
             if (str->buf)
@@ -81,7 +81,7 @@ et_string_set_with_end(et_string *str, const char *buf,
 
     if (len > str->max_length)
     {
-        p = realloc(str->buf, len + 1);
+        p = (char *)realloc(str->buf, len + 1);
         if (p)
         {
             if (str->buf)

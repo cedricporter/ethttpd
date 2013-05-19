@@ -16,6 +16,7 @@
 #include "mpm_prefork.h"
 #include "mpm_thread_pool.h"
 #include "connection.h"
+#include "mpm_epoll.h"
 
 #define ETHTTPD_PORT 12345
 
@@ -68,7 +69,9 @@ int initialize(int port)
 }
 
 
-void et_init_cycle(int listenfd)
+/* 初始化处理循环 */
+void
+et_init_cycle(int listenfd)
 {
     et_event_t *rev;
     et_connection_t *c;
@@ -85,6 +88,7 @@ void et_init_cycle(int listenfd)
 }
 
 
+/* 开始处理循环，在这里面，就是一个不断处理事件的循环 */
 void
 et_process_cycle()
 {
@@ -95,6 +99,7 @@ et_process_cycle()
 }
 
 
+/* 处理事件和时钟，首先获取 */
 void
 et_process_events_and_timers()
 {
@@ -140,6 +145,16 @@ int main(int argc, char **argv)
         et_event_actions = et_event_module.actions;
 
         mpm_thread_pool(listenfd);
+        break;
+    case 4:
+        et_event_module = et_epoll_module;
+        et_event_actions = et_event_module.actions;
+
+        et_event_actions.init();
+
+        et_init_cycle(listenfd);
+
+        et_process_cycle();
         break;
     default:
         et_event_module = et_select_module;

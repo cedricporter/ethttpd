@@ -40,7 +40,7 @@ int mpm_thread(int listenfd)
     for (;;)
     {
         socklen_t peerlen = sizeof(peeraddr);
-        iptr = malloc(sizeof(int));
+        iptr = (int *)malloc(sizeof(int));
 
         if ((*iptr = accept(listenfd, (struct sockaddr *)&peeraddr, &peerlen)) < 0)
         {

@@ -42,6 +42,7 @@ et_event_module_t et_select_module = {
     }
 };
 
+/* 初始化select模块 */
 static void
 et_select_init()
 {
@@ -58,18 +59,18 @@ et_select_init()
         free(event_index);
     }
 
-    event_index = calloc(FD_SETSIZE, sizeof(et_event_t *));
+    event_index = (et_event_t **)calloc(FD_SETSIZE, sizeof(et_event_t *));
 
     max_fd = -1;
 }
 
-
+/* 增加事件 */
 static void
 et_select_add_event(et_event_t *ev, int event)
 {
     et_connection_t *c;
 
-    c = ev->data;
+    c = (et_connection_t *)ev->data;
 
     if (c->fd > FD_SETSIZE)
     {
@@ -99,14 +100,14 @@ et_select_add_event(et_event_t *ev, int event)
            c->fd, ev->index);
 }
 
-
+/* 删除事件 */
 static void
 et_select_del_event(et_event_t *ev, int event)
 {
     et_connection_t *c;
     et_event_t *e;
 
-    c = ev->data;
+    c = (et_connection_t *)ev->data;
 
     if (event == ET_READ_EVENT)
     {
@@ -134,6 +135,7 @@ et_select_del_event(et_event_t *ev, int event)
     ev->index = INVALID_INDEX;
 }
 
+/* 将事件加入到队列中 */
 void
 et_locked_post_event(et_event_t *ev, et_event_t **queue)
 {
@@ -154,7 +156,7 @@ et_locked_post_event(et_event_t *ev, et_event_t **queue)
     }
 }
 
-
+/* 处理事件，将就绪的accept事件加入到accept队列中，一般事件加入到一般事件队列中 */
 static void
 et_select_process_event()
 {
@@ -167,7 +169,7 @@ et_select_process_event()
     {
         for (i = 0; i < nevents; ++i)
         {
-            c = event_index[i]->data;
+            c = (et_connection_t *)event_index[i]->data;
             if (max_fd < c->fd)
             {
                 max_fd = c->fd;
@@ -192,7 +194,7 @@ et_select_process_event()
     for (i = 0; i < nevents; ++i)
     {
         ev = event_index[i];
-        c = ev->data;
+        c = (et_connection_t *)ev->data;
         found = 0;
 
         if (ev->write)

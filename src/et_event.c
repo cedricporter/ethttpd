@@ -54,7 +54,7 @@ static void make_nonblock(int fd)
     }
 }
 
-
+/* accept事件的处理函数 */
 void
 et_event_accept(et_event_t *ev)
 {
@@ -72,8 +72,15 @@ et_event_accept(et_event_t *ev)
     clilen = sizeof(cliaddr);
     if ((connfd = accept(c->fd, (struct sockaddr *)&cliaddr, &clilen)) == -1)
     {
-        perror("accept()");
-        exit(1);
+        if (errno == EWOULDBLOCK)
+        {
+            return;
+        }
+        else
+        {
+            et_log("accept error");
+            return;
+        }
     }
 
     make_nonblock(connfd);
@@ -86,7 +93,7 @@ et_event_accept(et_event_t *ev)
     rev->handler = et_http_init_request; /* et_event_read; */
 }
 
-
+/* 关闭http连接 */
 static void
 et_http_close_connection(et_connection_t *c)
 {
@@ -94,7 +101,7 @@ et_http_close_connection(et_connection_t *c)
 
     et_log("close fd: %d", c->fd);
 
-    r = c->data;
+    r = (et_http_request_t *)c->data;
 
     /* et_del_event(ev, ET_WRITE_EVENT); */
     et_del_event(c->read, ET_READ_EVENT);
@@ -111,7 +118,7 @@ et_http_close_connection(et_connection_t *c)
 }
 
 
-/* 最后完成请求 */
+/* 最后完成请求，其中将数据发送回给客户端 */
 void
 et_http_finalize_request(et_http_request_t *r)
 {
@@ -220,7 +227,7 @@ done:
     r->state = ET_REQUEST_DONE;
 }
 
-/* Web Server 业务逻辑处理 */
+
 void
 et_http_core_run_phases(et_http_request_t *r)
 {
@@ -247,6 +254,7 @@ et_http_request_handler(et_event_t *ev)
     /* } */
 }
 
+/* http请求处理函数 */
 void
 et_http_handler(et_http_request_t *r)
 {
@@ -256,6 +264,7 @@ et_http_handler(et_http_request_t *r)
     et_http_finalize_request(r);
 }
 
+/* 处理请求 */
 void
 et_http_process_request(et_http_request_t *r)
 {
@@ -274,7 +283,7 @@ et_http_process_request(et_http_request_t *r)
 
 }
 
-
+/* 处理请求头部， */
 void
 et_http_process_request_headers(et_event_t *ev)
 {
@@ -284,8 +293,8 @@ et_http_process_request_headers(et_event_t *ev)
 
 	et_log("et_http_process_request_headers");
 
-    c = ev->data;
-    r = c->data;
+    c = (et_connection_t *)ev->data;
+    r = (et_http_request_t *)c->data;
 
     /* rc = ET_AGAIN; */
 
@@ -311,6 +320,7 @@ et_http_process_request_headers(et_event_t *ev)
     }
 }
 
+/* 分析请求行 */
 int
 et_http_parse_request_line(et_http_request_t *r)
 {
@@ -348,7 +358,7 @@ et_http_parse_request_line(et_http_request_t *r)
 
 }
 
-
+/* 处理请求行 */
 static void
 et_http_process_request_line(et_event_t *ev)
 {
@@ -359,8 +369,8 @@ et_http_process_request_line(et_event_t *ev)
 
     et_log("et_http_process_request_line");
 
-    c = ev->data;
-    r = c->data;
+    c = (et_connection_t *)ev->data;
+    r = (et_http_request_t *)c->data;
 
     rc = ET_AGAIN;
 
@@ -392,7 +402,8 @@ et_http_process_request_line(et_event_t *ev)
     }
 }
 
-
+/* 初始化请求事件处理函数，这个在accept到一个连接后，会给这个连接相关的读事件设置这个处理函数，
+ 负责初始化连接。*/
 void
 et_http_init_request(et_event_t *ev)
 {
@@ -402,7 +413,7 @@ et_http_init_request(et_event_t *ev)
     et_log("et_http_init_request");
 
     /* create a request object */
-    c = ev->data;
+    c = (et_connection_t *)ev->data;
     r = et_http_request_create();
 
     c->data = r;
@@ -412,7 +423,7 @@ et_http_init_request(et_event_t *ev)
     ev->handler(ev);
 }
 
-
+/* 读取请求头部 */
 int
 et_http_read_request_header(et_http_request_t *r)
 {
@@ -462,7 +473,7 @@ et_http_read_request_header(et_http_request_t *r)
 
 }
 
-
+/* 处理事件队列 */
 void
 et_event_process_posted(et_event_t **posted)
 {
@@ -484,7 +495,7 @@ et_event_process_posted(et_event_t **posted)
     }
 }
 
-
+/* 从队列中删除事件 */
 void
 et_delete_posted_event(et_event_t *ev)
 {
